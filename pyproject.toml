@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neorag"
+version = "2026.1.0"
+description = "Starter kit và bộ chấm chính thức của NeoRAG Cup 2026 - Team AI, CLB Lập Trình PTIT"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Team AI - CLB Lập Trình PTIT" }]
+dependencies = [
+    "numpy>=1.26",
+    "openai>=1.40",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.36"]
+local = ["sentence-transformers>=3.0"]  # embedding/reranker chạy trên máy: scripts/install.py --local
+dev = ["pytest>=8.0", "ruff>=0.6", "pre-commit>=3.7"]
+
+[project.scripts]
+neorag = "neorag.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/neorag"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "app"]
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

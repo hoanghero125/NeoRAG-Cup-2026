@@ -1,0 +1,3 @@
+# Cài repository cùng các thư viện khai báo trong pyproject.toml.
+# Embedding/reranker chạy trên máy (PyTorch): dùng `python scripts/install.py --local`.
+-e .[app,dev]

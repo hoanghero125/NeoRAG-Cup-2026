@@ -1,0 +1,32 @@
+# Cấu hình CHÍNH THỨC của bộ chấm NeoRAG Cup 2026.
+# BTC chấm Public/Private Test bằng đúng file này. Thí sinh không cần (và không nên) sửa.
+
+[submission]
+max_retrieved = 10        # số doc tối đa được nộp cho mỗi câu hỏi
+max_answer_chars = 2000   # độ dài tối đa của một câu trả lời
+
+[retrieval]
+k_values = [3, 5, 7]      # báo cáo metric tại các mốc k
+
+[judge]
+# Model judge cố định để điểm giữa các thí sinh so sánh được. Cả hai gọi qua gateway của BTC.
+chat_model = "claude-haiku-5-5"
+embedding_model = "bge-m3"           # BAAI/bge-m3 do BTC host
+# Không đặt temperature: claude-haiku-5-5 chỉ chạy với temperature mặc định.
+relevancy_questions = 3   # số câu hỏi sinh ngược khi tính Response Relevancy
+max_workers = 4           # số luồng gọi API song song
+cache_path = ".cache/judge.sqlite"
+
+[score]
+# Điểm Benchmark tổng hợp (0-1) dùng để xếp hạng.
+# retrieval_score = trung bình các metric retrieval dưới đây (tại k = rank_k)
+# generation_score = trung bình các metric generation dưới đây
+#   (noise_sensitivity được đổi thành 1 - noise_sensitivity vì càng thấp càng tốt)
+rank_k = 5
+retrieval_metrics = ["recall", "mrr", "ndcg"]
+generation_metrics = ["string_presence", "rouge_l", "groundedness", "response_relevancy", "noise_sensitivity"]
+retrieval_weight = 0.5
+generation_weight = 0.5
+# Câu hỏi không có đáp án trong tài liệu: điểm từ chối đúng được gộp vào generation_score
+abstention_in_generation = true
+

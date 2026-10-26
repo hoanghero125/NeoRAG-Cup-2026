@@ -1,0 +1,30 @@
+# Secrets - KHÔNG BAO GIỜ commit
+.env
+.env.*
+!.env.example
+
+# Đáp án Public/Private Test chỉ BTC giữ
+data/*/gold.jsonl
+# Đề Private Test phát hành ngày 08/11; trước đó không commit (BTC dùng git add -f khi phát hành)
+data/private_test/questions.jsonl
+
+# Output, cache
+outputs/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
