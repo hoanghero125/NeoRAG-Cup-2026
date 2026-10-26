@@ -123,3 +123,9 @@ def test_predict_writes_submission_zip(offline):
     assert cli.main(["predict", "train"]) == 0
     with zipfile.ZipFile(offline / "outputs/train_submission.zip") as z:
         assert z.namelist() == ["train_pred.jsonl"]
+
+
+def test_unknown_split_names_the_valid_ones(offline, capsys):
+    assert cli.main(["run", "public"]) == 1
+    out = capsys.readouterr().out
+    assert "public_test" in out and "No such file" not in out

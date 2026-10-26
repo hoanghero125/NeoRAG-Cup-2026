@@ -468,6 +468,21 @@ def _split_name(split: str) -> str:
     return path.parent.name if path.name in ("questions.jsonl", "gold.jsonl") else path.stem
 
 
+SPLITS = ("train", "public_test", "private_test")
+
+
+def _missing_split(split: str) -> str:
+    if split not in SPLITS:
+        return (
+            f"Không có bộ câu hỏi '{split}'. Dùng một trong: {', '.join(SPLITS)}, "
+            "hoặc đường dẫn tới file .jsonl."
+        )
+    return (
+        f"Chưa có data/{split}/questions.jsonl. BTC đăng file câu hỏi lên repository của cuộc "
+        "thi khi giai đoạn mở; tải file về và đặt vào đúng đường dẫn này."
+    )
+
+
 def _fill_defaults(args: argparse.Namespace) -> argparse.Namespace:
     """Điền đường dẫn mặc định từ tên bộ câu hỏi: `neorag evaluate train` thay cho lệnh dài."""
     split = args.split
@@ -478,6 +493,9 @@ def _fill_defaults(args: argparse.Namespace) -> argparse.Namespace:
         # Tập train có đáp án ngay trong questions.jsonl.
         questions = DATA_DIR / split / "questions.jsonl"
         gold = _first_existing(DATA_DIR / split / "gold.jsonl", questions)
+        needs_questions = any(getattr(args, n, "") is None for n in ("queries", "gold"))
+        if needs_questions and not questions.exists():
+            raise FileNotFoundError(_missing_split(split))
     predictions = Path("outputs") / f"{_split_name(split)}_pred.jsonl"
     for name, default in (
         ("queries", questions),
@@ -536,8 +554,9 @@ def main(argv: list[str] | None = None) -> int:
     from dotenv import load_dotenv
 
     load_dotenv()
-    args = _fill_defaults(build_parser().parse_args(argv))
+    args = build_parser().parse_args(argv)
     try:
+        args = _fill_defaults(args)
         return args.func(args)
     except KeyboardInterrupt:
         console.print("\n[yellow]Đã dừng.[/] Kết quả gọi LLM đã có vẫn nằm trong cache.")
