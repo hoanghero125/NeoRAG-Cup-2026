@@ -36,3 +36,34 @@ def test_shipped_data_is_consistent():
         assert set(q.relevant_ids) <= ids
         if q.answerable:
             assert q.relevant_ids, q.id
+
+
+def test_load_pipeline_finds_modules_in_current_directory(tmp_path, monkeypatch):
+    pkg = tmp_path / "my_solution_cwd"
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text("")
+    (pkg / "pipeline.py").write_text(
+        "from neorag.pipelines import RAGOutput, RAGPipeline\n"
+        "class P(RAGPipeline):\n"
+        "    def index(self, corpus): pass\n"
+        "    def run(self, query): return RAGOutput('a', [1])\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("sys.path", [p for p in __import__("sys").path if p not in ("", ".")])
+    assert isinstance(load_pipeline("my_solution_cwd.pipeline:P"), RAGPipeline)
+
+
+def test_predict_with_workers_keeps_question_order(gold):
+    from neorag.pipelines import RAGOutput
+    from neorag.predict import predict
+
+    class Echo(RAGPipeline):
+        def index(self, corpus):
+            pass
+
+        def run(self, query):
+            return RAGOutput(answer=query, retrieved_ids=[1])
+
+    preds = predict(Echo(), gold, max_retrieved=10, workers=3)
+    assert [p.id for p in preds] == [q.id for q in gold]
+    assert [p.answer for p in preds] == [q.query for q in gold]

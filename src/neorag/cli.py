@@ -122,6 +122,7 @@ def _cmd_predict(args: argparse.Namespace) -> int:
             queries,
             cfg["submission"]["max_retrieved"],
             on_step=lambda _: bar.advance(task),
+            workers=args.workers,
         )
     _done_line(f"Trả lời {len(queries)} câu hỏi", time.perf_counter() - t0)
 
@@ -419,6 +420,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="pipeline dạng module.path:ClassName",
     )
     p.add_argument("--out", help="file predictions (mặc định outputs/<split>_pred.jsonl)")
+    p.add_argument("--workers", type=int, default=1, help=WORKERS_HELP)
     p.set_defaults(func=_cmd_predict)
 
     v = sub.add_parser("validate", parents=[common, split], help="kiểm tra định dạng file nộp bài")
@@ -449,11 +451,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="pipeline dạng module.path:ClassName",
     )
     r.add_argument("--out", help="file predictions (mặc định outputs/<split>_pred.jsonl)")
+    r.add_argument("--workers", type=int, default=1, help=WORKERS_HELP)
     r.add_argument(
         "--no-judge", action="store_true", help="bỏ qua metric cần LLM judge (nhanh, không tốn API)"
     )
     r.set_defaults(func=_cmd_run)
     return parser
+
+
+WORKERS_HELP = "số câu hỏi trả lời song song (mặc định 1; gateway cho tối đa 8 request đồng thời)"
 
 
 def _first_existing(*paths: Path) -> Path:

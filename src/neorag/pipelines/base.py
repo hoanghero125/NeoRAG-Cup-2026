@@ -7,8 +7,10 @@ nên bạn tự do thay đổi mọi thứ bên trong: chunking, index, hybrid s
 from __future__ import annotations
 
 import importlib
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 
 from neorag.data import Document
 
@@ -38,6 +40,9 @@ def load_pipeline(spec: str, **kwargs) -> RAGPipeline:
     module_name, _, class_name = spec.partition(":")
     if not class_name:
         raise ValueError(f"Pipeline phải có dạng 'module.path:ClassName', nhận được: {spec!r}")
+    cwd = str(Path.cwd())
+    if cwd not in sys.path:  # lệnh `neorag` không tự thêm thư mục hiện tại vào sys.path
+        sys.path.insert(0, cwd)
     cls = getattr(importlib.import_module(module_name), class_name)
     if not issubclass(cls, RAGPipeline):
         raise TypeError(f"{spec} phải kế thừa neorag.pipelines.RAGPipeline")
